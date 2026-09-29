@@ -1,21 +1,37 @@
-import { mockData } from "../mocks/seedData";
 import type { PolicyDocument } from "../types/PolicyDocument";
+import { nextId, readRows, writeRows } from "./localStorage";
 
-const endpoint = "/api/policy-document";
+const TABLE = "policyDocument" as const;
 
 export async function listPolicyDocument(): Promise<PolicyDocument[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && false) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
-  }
-  return [...(mockData.policyDocument as unknown as PolicyDocument[])];
+  return readRows<PolicyDocument>(TABLE);
 }
 
-export async function savePolicyDocument(payload: PolicyDocument) {
-  console.info("save PolicyDocument", payload);
-  return payload;
+export async function createPolicyDocument(payload: PolicyDocument): Promise<PolicyDocument> {
+  const rows = readRows<PolicyDocument>(TABLE);
+  const row: PolicyDocument = { ...payload, id: nextId(rows) };
+  rows.push(row);
+  writeRows(TABLE, rows);
+  return row;
+}
+
+export async function updatePolicyDocument(payload: PolicyDocument): Promise<PolicyDocument> {
+  const rows = readRows<PolicyDocument>(TABLE);
+  const index = rows.findIndex((row) => row.id === payload.id);
+  if (index < 0) return payload;
+  rows[index] = { ...rows[index], ...payload };
+  writeRows(TABLE, rows);
+  return rows[index];
+}
+
+export async function deletePolicyDocument(id: number): Promise<void> {
+  writeRows(
+    TABLE,
+    readRows<PolicyDocument>(TABLE).filter((row) => row.id !== id)
+  );
+}
+
+/** 兼容旧调用的保存入口（存在即更新，否则新建） */
+export async function savePolicyDocument(payload: PolicyDocument): Promise<PolicyDocument> {
+  return payload.id ? updatePolicyDocument(payload) : createPolicyDocument(payload);
 }

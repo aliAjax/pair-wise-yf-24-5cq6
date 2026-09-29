@@ -1,9 +1,11 @@
-import { DiffTypeText } from "./DiffType";
-import { PrivacyRiskLevelText } from "./PrivacyRiskLevel";
-import { ReviewStatusText } from "./ReviewStatus";
+import { DIFF_TYPE_TEXT } from "./DiffType";
+import { RISK_LEVEL_TEXT } from "./PrivacyRiskLevel";
+import { REVIEW_STATUS_TEXT } from "./ReviewStatus";
+import { SECTION_CATEGORY_TEXT } from "./SectionCategory";
 
 export const STATUS_TEXT = {
-  DiffType: DiffTypeText,
-  PrivacyRiskLevel: PrivacyRiskLevelText,
-  ReviewStatus: ReviewStatusText
+  DiffType: DIFF_TYPE_TEXT,
+  PrivacyRiskLevel: RISK_LEVEL_TEXT,
+  ReviewStatus: REVIEW_STATUS_TEXT,
+  SectionCategory: SECTION_CATEGORY_TEXT
 };

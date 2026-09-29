@@ -1,14 +1,30 @@
 import type { PolicyDocument } from "../types/PolicyDocument";
 
 export const createDefaultPolicyDocument = (overrides: Partial<PolicyDocument> = {}): PolicyDocument => ({
-  id: 1 as never,
-  title: "title 1" as never,
-  version_label: "version label 1" as never,
-  raw_text: "raw text 1" as never,
-  normalized_sections: "normalized sections 1" as never,
-  imported_at: "2026-06-11T09:00:00Z" as never,
+  id: 0,
+  title: "",
+  version_label: "",
+  raw_text: "",
+  normalized_sections: "[]",
+  imported_at: "",
   ...overrides
 });
 
-export const createPolicyDocumentForm = createDefaultPolicyDocument;
-export const createPolicyDocumentResponse = createDefaultPolicyDocument;
+/** 文档导入表单对象 */
+export const createPolicyDocumentForm = (): Pick<PolicyDocument, "title" | "version_label" | "raw_text"> => ({
+  title: "",
+  version_label: "",
+  raw_text: ""
+});
+
+/** 导入提交后落库 / 返回给页面的对象 */
+export const createPolicyDocumentResponse = (
+  payload: Pick<PolicyDocument, "title" | "version_label" | "raw_text" | "normalized_sections">,
+  id: number,
+  importedAt = new Date().toISOString()
+): PolicyDocument =>
+  createDefaultPolicyDocument({
+    ...payload,
+    id,
+    imported_at: importedAt
+  });
