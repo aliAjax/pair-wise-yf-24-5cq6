@@ -1,21 +1,27 @@
-import { mockData } from "../mocks/seedData";
 import type { DiffResult } from "../types/DiffResult";
+import { readTable, writeTable } from "../utils/storage";
 
-const endpoint = "/api/diff-result";
+const tableKey = "diffResult" as const;
 
 export async function listDiffResult(): Promise<DiffResult[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && false) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
-  }
-  return [...(mockData.diffResult as unknown as DiffResult[])];
+  return readTable<DiffResult>(tableKey);
 }
 
-export async function saveDiffResult(payload: DiffResult) {
-  console.info("save DiffResult", payload);
+export async function saveAllDiffResult(rows: DiffResult[]): Promise<DiffResult[]> {
+  writeTable(tableKey, rows);
+  return rows;
+}
+
+export async function updateDiffResult(payload: DiffResult): Promise<DiffResult> {
+  const rows = await listDiffResult();
+  const index = rows.findIndex((row) => row.id === payload.id);
+  if (index >= 0) {
+    rows[index] = payload;
+    await saveAllDiffResult(rows);
+  }
   return payload;
+}
+
+export async function bulkReplaceDiffResult(rows: DiffResult[]): Promise<DiffResult[]> {
+  return saveAllDiffResult(rows);
 }

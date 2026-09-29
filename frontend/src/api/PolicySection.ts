@@ -1,21 +1,42 @@
-import { mockData } from "../mocks/seedData";
 import type { PolicySection } from "../types/PolicySection";
+import { readTable, writeTable } from "../utils/storage";
 
-const endpoint = "/api/policy-section";
+const tableKey = "policySection" as const;
 
 export async function listPolicySection(): Promise<PolicySection[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && false) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
-  }
-  return [...(mockData.policySection as unknown as PolicySection[])];
+  return readTable<PolicySection>(tableKey);
 }
 
-export async function savePolicySection(payload: PolicySection) {
-  console.info("save PolicySection", payload);
+export async function saveAllPolicySection(rows: PolicySection[]): Promise<PolicySection[]> {
+  writeTable(tableKey, rows);
+  return rows;
+}
+
+export async function createPolicySection(payload: PolicySection): Promise<PolicySection> {
+  const rows = await listPolicySection();
+  rows.push(payload);
+  await saveAllPolicySection(rows);
   return payload;
+}
+
+export async function bulkCreatePolicySection(payloads: PolicySection[]): Promise<PolicySection[]> {
+  const rows = await listPolicySection();
+  rows.push(...payloads);
+  await saveAllPolicySection(rows);
+  return payloads;
+}
+
+export async function updatePolicySection(payload: PolicySection): Promise<PolicySection> {
+  const rows = await listPolicySection();
+  const index = rows.findIndex((row) => row.id === payload.id);
+  if (index >= 0) {
+    rows[index] = payload;
+    await saveAllPolicySection(rows);
+  }
+  return payload;
+}
+
+export async function deletePolicySectionByDocument(documentId: number): Promise<void> {
+  const rows = (await listPolicySection()).filter((row) => row.document_id !== documentId);
+  await saveAllPolicySection(rows);
 }

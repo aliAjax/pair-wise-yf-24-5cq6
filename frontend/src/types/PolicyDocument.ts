@@ -3,6 +3,7 @@ export interface PolicyDocument {
   title: string;
   version_label: string;
   raw_text: string;
-  normalized_sections: string;
+  /** 导入时解析出的条款数量快照，用于列表展示 */
+  normalized_sections: number;
   imported_at: string;
 }

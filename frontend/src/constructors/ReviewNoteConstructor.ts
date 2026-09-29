@@ -1,14 +1,24 @@
 import type { ReviewNote } from "../types/ReviewNote";
 
+/** 审阅备注构造器 */
 export const createDefaultReviewNote = (overrides: Partial<ReviewNote> = {}): ReviewNote => ({
-  id: 1 as never,
-  diff_result_id: 1 as never,
-  tag: "tag 1" as never,
-  comment: "comment 1" as never,
-  reviewer: "reviewer 1" as never,
-  status: "CONFIRMED" as never,
+  id: 0,
+  diff_result_id: 0,
+  tag: "存疑",
+  comment: "",
+  reviewer: "",
+  status: "OPEN",
+  inherited_from_note_id: null,
+  created_at: "",
+  updated_at: "",
   ...overrides
 });
 
-export const createReviewNoteForm = createDefaultReviewNote;
-export const createReviewNoteResponse = createDefaultReviewNote;
+export const createReviewNoteForm = (): Partial<ReviewNote> => ({
+  tag: "存疑",
+  comment: "",
+  reviewer: ""
+});
+
+export const createReviewNoteResponse = (overrides: Partial<ReviewNote> = {}): ReviewNote =>
+  createDefaultReviewNote(overrides);

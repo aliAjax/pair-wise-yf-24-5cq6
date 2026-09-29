@@ -1,12 +1,28 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { inject, onMounted } from "vue";
+import { RouterLink, RouterView, useRoute } from "vue-router";
+import { ElMessage } from "element-plus";
 import { routes } from "./router/routes";
-import { mockData } from "./mocks/seedData";
-import StatusBadge from "./components/common/StatusBadge.vue";
-import StatCard from "./components/common/StatCard.vue";
-const active = ref<string>(routes[0]?.route ?? "/dashboard");
-const current = computed(() => routes.find((route) => route.route === active.value) ?? routes[0]);
-const entries = Object.entries(mockData);
+import { usePolicyDocumentStore } from "./stores/PolicyDocumentStore";
+import { useDiffResultStore } from "./stores/DiffResultStore";
+import { useReviewNoteStore } from "./stores/ReviewNoteStore";
+
+const route = useRoute();
+const documentStore = usePolicyDocumentStore();
+const diffStore = useDiffResultStore();
+const noteStore = useReviewNoteStore();
+const seededThisBoot = inject<boolean>("seededThisBoot", false);
+
+onMounted(async () => {
+  if (seededThisBoot) {
+    ElMessage.success("已载入三版示例政策：v2 中已确认的「信息共享」在 v3 改为出售位置信息后已退回待处理，旧备注保留");
+  }
+  try {
+    await Promise.all([documentStore.load(), diffStore.load(), noteStore.load()]);
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : "数据加载失败");
+  }
+});
 </script>
 
 <template>
@@ -14,13 +30,20 @@ const entries = Object.entries(mockData);
     <aside>
       <div class="brand">隐私政策差异对比器</div>
       <nav>
-        <button v-for="route in routes" :key="route.route" :class="{ active: active === route.route }" @click="active = route.route">{{ route.name }}</button>
+        <RouterLink
+          v-for="item in routes"
+          :key="item.route"
+          :to="item.route"
+          class="nav-item"
+          :class="{ active: route.path === item.route }"
+        >
+          {{ item.name }}
+        </RouterLink>
       </nav>
+      <div class="aside-foot">数据保存在浏览器 localStorage<br />纯前端 · 无第三方 API</div>
     </aside>
     <main class="page">
-      <section class="page-head"><div><p class="eyebrow">policy-diff</p><h1>{{ current?.name }}</h1></div><StatusBadge value="LOCAL_DATA" /></section>
-      <section class="metrics"><StatCard label="核心模型" :value="entries.length" /><StatCard label="共享枚举" :value="3" /><StatCard label="本地记录" :value="entries.reduce((s, [, rows]) => s + rows.length, 0)" /></section>
-      <section class="workbench"><div class="panel wide"><h2>业务数据</h2><article class="row" v-for="[key, rows] in entries" :key="key"><strong>{{ key }}</strong><span>{{ rows.length }} 条</span><StatusBadge value="READY" /></article></div><div class="panel"><h2>联动检查</h2><p>页面、store、API、构造器、日志模板和枚举常量均按提示词拆分。</p></div></section>
+      <RouterView />
     </main>
   </div>
 </template>
